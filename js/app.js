@@ -1,4 +1,4 @@
-// КОНСТАНТЫ - замените на свои значения!
+// КОНСТАНТЫ - замените не свои значения!
 const SUPABASE_URL='https://jvkydzhziwjejohbrtkw.supabase.co';
 const SUPABASE_KEY='sb_publishable_iAGSy8_mZ7nZClH8nQDgNA_n4IbzRdA';
 // Проверяем, что ключи заданы
