@@ -1,6 +1,6 @@
 // ВАШИ КЛЮЧИ SUPABASE (вставьте свои!)
-const SUPABASE_URL = 'https://xxxxx.supabase.co'; // Вставьте Project URL
-const SUPABASE_KEY = 'your-anon-key'; // Вставьте anon public ключ
+const SUPABASE_URL = https://jvkydzhziwjejohbrtkw.supabase.co
+const SUPABASE_KEY = sb_publishable_iAGSy8_mZ7nZClH8nQDgNA_n4IbzRdA
 
 // Загружаем товары
 async function loadProducts() {
