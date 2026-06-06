@@ -157,7 +157,7 @@ function openProductModal(product) {
             '<div class="product-price" style="font-size:32px;font-weight:700;color:#fc3f1d;margin-bottom:20px;">' + product.price.toLocaleString('ru-RU') + ' ₽</div>' +
             '<h3 style="margin:20px 0 12px 0;">Характеристики</h3>' +
             '<div style="margin-bottom:24px;">' + specsHtml + '</div>' +
-            (product.inStock ? '<button style="width:100%;padding:16px;background:#fc3f1d;color:white;border:none;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer;">Добавить в корзину</button>' : '<button disabled style="width:100%;padding:16px;background:#ccc;color:#666;border:none;border-radius:12px;font-size:18px;cursor:not-allowed;">Нет в наличии</button>') +
+            (product.inStock ? '<button style="width:100%;padding:16px;background:#fc3f1d;color:white;border:none;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer;"(product.inStock ? '<button onclick="addToCart(' + JSON.stringify(product).replace(/'/g, "&apos;") + '); closeModal();" style="width:100%;padding:16px;background:#fc3f1d;color:white;border:none;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer;">🛒 Добавить в корзину</button>' : '<button disabled style="width:100%;padding:16px;background:#ccc;color:#666;border:none;border-radius:12px;font-size:18px;cursor:not-allowed;">Нет в наличии</button>')' : '<button disabled style="width:100%;padding:16px;background:#ccc;color:#666;border:none;border-radius:12px;font-size:18px;cursor:not-allowed;">Нет в наличии</button>') +
         '</div>' +
     '</div>';
     
@@ -175,3 +175,113 @@ function openProductModal(product) {
 }
 
 window.openProductModal = openProductModal;
+// Корзина
+let cart = [];
+
+function addToCart(product) {
+    const existingItem = cart.find(item => item.id === product.id);
+    
+    if (existingItem) {
+        existingItem.quantity++;
+    } else {
+        cart.push({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            quantity: 1
+        });
+    }
+    
+    updateCartCount();
+    showNotification('✅ ' + product.name + ' добавлен в корзину');
+}
+
+function removeFromCart(productId) {
+    cart = cart.filter(item => item.id !== productId);
+    updateCartCount();
+    renderCart();
+}
+
+function updateCartCount() {
+    const count = cart.reduce((total, item) => total + item.quantity, 0);
+    const countElement = document.getElementById('cartCount');
+    if (countElement) {
+        countElement.textContent = count;
+        countElement.style.display = count > 0 ? 'flex' : 'none';
+    }
+}
+
+function openCart() {
+    const modal = document.getElementById('cartModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        renderCart();
+    }
+}
+
+function closeCart() {
+    const modal = document.getElementById('cartModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function renderCart() {
+    const cartItems = document.getElementById('cartItems');
+    const cartTotal = document.getElementById('cartTotal');
+    
+    if (!cartItems) return;
+    
+    if (cart.length === 0) {
+        cartItems.innerHTML = '<p style="text-align:center;color:#888;padding:40px;">Корзина пуста</p>';
+        cartTotal.textContent = '0';
+        return;
+    }
+    
+    let total = 0;
+    cartItems.innerHTML = cart.map(item => {
+        total += item.price * item.quantity;
+        return '<div class="cart-item">' +
+            (item.image ? '<img src="' + item.image + '" alt="' + item.name + '">' : '<div style="width:80px;height:80px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:32px;">📦</div>') +
+            '<div class="cart-item-info">' +
+                '<h4>' + item.name + '</h4>' +
+                '<div class="cart-item-price">' + item.price.toLocaleString('ru-RU') + ' ₽ x ' + item.quantity + '</div>' +
+                '<button onclick="removeFromCart(' + item.id + ')" style="margin-top:8px;padding:6px 12px;background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;">Удалить</button>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+    
+    if (cartTotal) {
+        cartTotal.textContent = total.toLocaleString('ru-RU');
+    }
+}
+
+function checkout() {
+    if (cart.length === 0) {
+        alert('Корзина пуста!');
+        return;
+    }
+    
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    alert('Заказ оформлен!\n\nТоваров: ' + cart.length + '\nСумма: ' + total.toLocaleString('ru-RU') + ' ₽\n\nСпасибо за покупку! 🎉');
+    cart = [];
+    updateCartCount();
+    closeCart();
+}
+
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#22c55e;color:white;padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.2);z-index:3000;animation:slideIn 0.3s ease;';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(function() {
+        notification.remove();
+    }, 3000);
+}
+
+// Добавьте стили для анимации
+const style = document.createElement('style');
+style.textContent = '@keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }';
+document.head.appendChild(style);
